@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Buffers;
+using System.Linq;
 using System.Text.Json;
+using System.Xml.Serialization;
 
 namespace Cats
 {
@@ -15,10 +17,7 @@ namespace Cats
 
 		static ST()
 		{
-			STSettings.Converters.Add(new CatDataConverter());
-			STSettings.Converters.Add(new CatConverter());
-			STSettings.Converters.Add(new OwnerConverter());
-			STSettings.Converters.Add(new OwnerCatConverter());
+//			STSettings.Converters.Add(new CatDataConverter());
 		}
 
 
@@ -29,7 +28,9 @@ namespace Cats
 
 		public static CatData DeSerialize(string json)
 		{
-			return JsonSerializer.Deserialize<CatData>(json, STSettings);
+			var catData = JsonSerializer.Deserialize<CatData>(json, STSettings);
+			Fixup(catData);
+			return catData;
 		}
 
 		public static ReadOnlyMemory<byte> SerializeUtf8(CatData data)
@@ -42,7 +43,21 @@ namespace Cats
 
 		public static CatData DeSerializeUtf8(ReadOnlySpan<byte> utf8Json)
 		{
-			return JsonSerializer.Deserialize<CatData>(utf8Json, STSettings);
+			var catData = JsonSerializer.Deserialize<CatData>(utf8Json, STSettings);
+			Fixup(catData);
+			return catData;
+		}
+
+
+		static void Fixup(CatData catData)
+		{
+			foreach (var ownerCat in catData.OwnerCats)
+			{
+				ownerCat.Cat = catData.Cats.First(c => c.Id == ownerCat.CatId);
+				ownerCat.Owner = catData.Owners.First(c => c.Id == ownerCat.OwnerId);
+				ownerCat.Cat.OwnerCats.Add(ownerCat);
+				ownerCat.Owner.OwnerCats.Add(ownerCat);
+			}
 		}
 	}
 }

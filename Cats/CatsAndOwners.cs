@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace Cats
 {
@@ -14,6 +15,7 @@ namespace Cats
 	{
 		public int Id { get; set; }
 		public string Name { get; set; }
+		[JsonIgnore]
 		public IList<OwnerCat> OwnerCats { get; set; } = new List<OwnerCat>();
 	}
 
@@ -21,15 +23,18 @@ namespace Cats
 	{
 		public int Id { get; set; }
 		public string Name { get; set; }
+		[JsonIgnore]
 		public IList<OwnerCat> OwnerCats { get; set; } = new List<OwnerCat>();
 	}
 
 	public class OwnerCat
 	{
 		public int CatId { get; set; }
+		[JsonIgnore]
 		public Cat Cat { get; set; }
 
 		public int OwnerId { get; set; }
+		[JsonIgnore]
 		public Owner Owner { get; set; }
 
 		public static OwnerCat CreateFrom(Cat cat, Owner owner)
